@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Matematika Test</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: var(--tg-theme-bg-color, #fff);
+  --text: var(--tg-theme-text-color, #000);
+  --hint: var(--tg-theme-hint-color, #999);
+  --btn: var(--tg-theme-button-color, #3390ec);
+  --btn-text: var(--tg-theme-button-text-color, #fff);
+  --secondary-bg: var(--tg-theme-secondary-bg-color, #f0f0f0);
+  --accent-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.screen { display: none; }
+.screen.active { display: block; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ===== START SCREEN ===== */
+#start-screen { padding: 0; }
+
+.hero-banner {
+  background: var(--accent-gradient);
+  padding: 40px 24px 32px;
+  text-align: center;
+  border-radius: 0 0 28px 28px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-banner::before {
+  content: '';
+  position: absolute;
+  top: -60%; left: -20%;
+  width: 140%; height: 140%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+}
+.hero-icon {
+  width: 72px; height: 72px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  margin-bottom: 16px;
+  backdrop-filter: blur(10px);
+}
+.hero-banner h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 6px;
+  letter-spacing: -0.3px;
+}
+.hero-subtitle {
+  font-size: 14px;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.5;
+}
+
+.start-body { padding: 20px 16px 24px; }
+
+.feature-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.feature-card {
+  background: var(--secondary-bg);
+  border-radius: 14px;
+  padding: 16px 10px;
+  text-align: center;
+}
+.feature-card .fc-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+.feature-card .fc-num {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+}
+.feature-card .fc-label {
+  font-size: 11px;
+  color: var(--hint);
+  margin-top: 2px;
+}
+
+.info-card {
+  background: var(--secondary-bg);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+.info-card .ic-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.info-card .ic-text {
+  font-size: 13px;
+  color: var(--hint);
+  line-height: 1.6;
+}
+
+.trial-badge {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.trial-badge .tb-icon { font-size: 28px; flex-shrink: 0; }
+.trial-badge .tb-content { flex: 1; }
+.trial-badge .tb-title { font-size: 13px; font-weight: 600; color: #92400e; }
+.trial-badge .tb-desc { font-size: 12px; color: #a16207; line-height: 1.5; margin-top: 2px; }
+
+.btn {
+  display: block; width: 100%; padding: 15px; border: none; border-radius: 14px;
+  font-size: 16px; font-weight: 600; cursor: pointer;
+  transition: transform 0.1s, opacity 0.15s;
+}
+.btn:active { transform: scale(0.98); opacity: 0.85; }
+.btn.primary {
+  background: var(--accent-gradient);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(102, 126, 234, 0.35);
+}
+.btn.secondary { background: var(--secondary-bg); color: var(--text); margin-top: 10px; }
+.btn.telegram { background: var(--btn); color: var(--btn-text); }
+
+/* ===== TEST SCREEN ===== */
+#test-screen { padding: 16px; }
+
+#progress-bar { height: 4px; background: var(--secondary-bg); border-radius: 2px; margin-bottom: 12px; overflow: hidden; }
+#progress-fill { height: 100%; background: var(--btn); transition: width 0.3s; width: 0%; }
+
+#topic-header {
+  background: var(--secondary-bg); border-radius: 10px; padding: 10px 14px;
+  margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;
+}
+#topic-name { font-size: 13px; font-weight: 600; flex: 1; }
+#topic-counter { font-size: 12px; color: var(--hint); white-space: nowrap; margin-left: 8px; }
+
+#question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+#q-number { font-size: 14px; color: var(--hint); }
+#q-timer { font-size: 14px; font-weight: 600; color: var(--hint); }
+
+#q-difficulty {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 11px; font-weight: 600; margin-bottom: 12px;
+}
+.diff-1 { background: #e8f5e9; color: #2e7d32; }
+.diff-2 { background: #fff3e0; color: #ef6c00; }
+.diff-3 { background: #fff3e0; color: #e65100; }
+.diff-4 { background: #ffebee; color: #c62828; }
+
+#q-text { font-size: 18px; line-height: 1.6; margin-bottom: 20px; font-weight: 500; }
+
+.options { display: flex; flex-direction: column; gap: 10px; }
+.option-btn {
+  display: flex; align-items: center; width: 100%; padding: 14px 16px;
+  border: 2px solid var(--secondary-bg); border-radius: 12px;
+  background: var(--bg); color: var(--text); font-size: 16px;
+  cursor: pointer; transition: all 0.15s; text-align: left;
+}
+.option-btn:active { transform: scale(0.98); }
+.option-letter {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--secondary-bg); font-weight: 700; font-size: 14px;
+  margin-right: 12px; flex-shrink: 0;
+}
+.option-btn.selected { border-color: var(--btn); background: color-mix(in srgb, var(--btn) 10%, var(--bg)); }
+.option-btn.selected .option-letter { background: var(--btn); color: var(--btn-text); }
+.option-btn.correct-answer { border-color: var(--success); background: #ecfdf5; }
+.option-btn.wrong-answer { border-color: var(--danger); background: #fef2f2; }
+
+/* ===== PAUSE SCREEN ===== */
+#pause-screen { padding: 16px; text-align: center; }
+.pause-content { padding-top: 60px; }
+.pause-icon {
+  width: 80px; height: 80px;
+  background: var(--secondary-bg);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  margin-bottom: 20px;
+}
+#pause-screen h2 { font-size: 22px; margin-bottom: 8px; }
+#pause-screen .pause-desc { color: var(--hint); margin-bottom: 32px; line-height: 1.6; font-size: 14px; }
+#pause-timer {
+  font-size: 56px;
+  font-weight: 700;
+  color: var(--btn);
+  margin: 24px 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===== PAYWALL SCREEN ===== */
+#paywall-screen { padding: 0; }
+
+.paywall-header {
+  background: var(--accent-gradient);
+  padding: 32px 24px 28px;
+  text-align: center;
+  border-radius: 0 0 28px 28px;
+}
+.paywall-header .pw-icon { font-size: 48px; margin-bottom: 12px; }
+.paywall-header h2 { font-size: 20px; color: #fff; margin-bottom: 6px; }
+.paywall-header p { font-size: 14px; color: rgba(255,255,255,0.8); }
+
+.paywall-body { padding: 20px 16px; }
+
+.trial-summary {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.trial-chip {
+  background: var(--secondary-bg);
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ai-insight {
+  background: var(--secondary-bg);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  line-height: 1.7;
+  text-align: left;
+}
+.ai-insight .ai-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--hint);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.upgrade-card {
+  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.upgrade-card h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #5b21b6;
+  margin-bottom: 6px;
+}
+.upgrade-card p {
+  font-size: 13px;
+  color: #6d28d9;
+  line-height: 1.5;
+}
+
+/* ===== RESULT SCREEN ===== */
+#result-screen { padding: 0; }
+
+.result-header {
+  background: var(--accent-gradient);
+  padding: 32px 24px;
+  text-align: center;
+  border-radius: 0 0 28px 28px;
+  color: #fff;
+}
+.result-score-ring {
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(10px);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+.result-score-ring .rs-num {
+  font-size: 28px;
+  font-weight: 700;
+}
+.result-score-ring .rs-label {
+  font-size: 11px;
+  opacity: 0.8;
+}
+.result-header .rh-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.result-header .rh-subtitle {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.result-body { padding: 20px 16px; }
+
+.result-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.rs-card {
+  background: var(--secondary-bg);
+  border-radius: 14px;
+  padding: 14px 8px;
+  text-align: center;
+}
+.rs-card .rsc-num { font-size: 22px; font-weight: 700; color: var(--text); }
+.rs-card .rsc-label { font-size: 11px; color: var(--hint); margin-top: 2px; }
+
+.legend {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin: 0 0 12px;
+  padding: 10px;
+  background: var(--secondary-bg);
+  border-radius: 12px;
+}
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--hint); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+.topic-list { margin: 0 0 20px; }
+.topic-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--secondary-bg);
+}
+.topic-item:last-child { border-bottom: none; }
+.topic-status { width: 10px; height: 10px; border-radius: 50%; margin-right: 12px; flex-shrink: 0; }
+.topic-status.qizil { background: var(--danger); }
+.topic-status.sariq { background: var(--warning); }
+.topic-status.yashil { background: var(--success); }
+.topic-name { flex: 1; font-size: 14px; line-height: 1.3; }
+.topic-pct { font-size: 14px; font-weight: 600; margin-left: 8px; }
+</style>
+</head>
+<body>
+
+<!-- ===== START SCREEN ===== -->
+<div id="start-screen" class="screen active">
+  <div class="hero-banner">
+    <div class="hero-icon">📐</div>
+    <h1>Prezident Maktabi</h1>
+    <div class="hero-subtitle">Matematika imtihoniga tayyorgarlik<br>Adaptiv test · Rasch model</div>
+  </div>
+  <div class="start-body">
+    <div class="feature-cards">
+      <div class="feature-card">
+        <div class="fc-num">45</div>
+        <div class="fc-label">mavzu</div>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">🎯</div>
+        <div class="fc-label">adaptiv</div>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">⏱</div>
+        <div class="fc-label">vaqt o'lchanadi</div>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <div class="ic-title">💡 Qanday ishlaydi?</div>
+      <div class="ic-text">
+        Test sizning darajangizga moslashadi. Bilgan mavzulardan tezroq o'tadi, qiyin mavzularda chuqurroq tekshiradi.
+      </div>
+    </div>
+
+    <div class="trial-badge">
+      <div class="tb-icon">🎁</div>
+      <div class="tb-content">
+        <div class="tb-title">Bepul sinov: 5 mavzu + AI tahlil</div>
+        <div class="tb-desc">To'liq 45 mavzu + shaxsiy reja — pullik versiyada</div>
+      </div>
+    </div>
+
+    <button class="btn primary" onclick="startTest()">Testni boshlash</button>
+  </div>
+</div>
+
+<!-- ===== TEST SCREEN ===== -->
+<div id="test-screen" class="screen">
+  <div id="progress-bar"><div id="progress-fill"></div></div>
+  <div id="topic-header">
+    <span id="topic-name"></span>
+    <span id="topic-counter"></span>
+  </div>
+  <div id="question-header">
+    <span id="q-number"></span>
+    <span id="q-timer">0:00</span>
+  </div>
+  <div id="q-difficulty"></div>
+  <div id="q-text"></div>
+  <div class="options" id="options-container"></div>
+</div>
+
+<!-- ===== PAUSE SCREEN ===== -->
+<div id="pause-screen" class="screen">
+  <div class="pause-content">
+    <div class="pause-icon">☕</div>
+    <h2>Dam oling!</h2>
+    <p class="pause-desc">Bir oz tinchlanib, diqqatingizni jamlang.<br>Shoshilmasdan javob bering.</p>
+    <div id="pause-timer">2:00</div>
+    <button class="btn secondary" id="pause-skip" style="display:none" onclick="resumeTest()">Davom etish</button>
+  </div>
+</div>
+
+<!-- ===== PAYWALL SCREEN ===== -->
+<div id="paywall-screen" class="screen">
+  <div class="paywall-header">
+    <div class="pw-icon">🎯</div>
+    <h2>Sinov test tugadi!</h2>
+    <p>5 mavzu bo'yicha natijangiz tayyor</p>
+  </div>
+  <div class="paywall-body">
+    <div id="trial-results" class="trial-summary"></div>
+
+    <div id="trial-ai" class="ai-insight">
+      <div class="ai-label">🤖 AI tahlil</div>
+      <div id="trial-ai-text"></div>
+    </div>
+
+    <div class="upgrade-card">
+      <h3>To'liq diagnostika</h3>
+      <p>Qolgan 40 mavzu + AI shaxsiy 30 kunlik reja</p>
+    </div>
+
+    <button class="btn primary" onclick="requestPayment()">⭐ To'liq test — sotib olish</button>
+    <button class="btn secondary" onclick="sendTrialResults()">Bepul natijani yuborish</button>
+  </div>
+</div>
+
+<!-- ===== MILESTONE SCREEN ===== -->
+<div id="milestone-screen" class="screen">
+  <div class="result-header" style="background:linear-gradient(135deg,#667eea,#764ba2)">
+    <div style="font-size:48px;margin-bottom:12px" id="ms-icon">📊</div>
+    <div class="rh-title" id="ms-title">Oraliq natija</div>
+    <div class="rh-subtitle" id="ms-subtitle"></div>
+  </div>
+  <div class="result-body">
+    <div class="result-stats">
+      <div class="rs-card"><div class="rsc-num" id="ms-green" style="color:#10b981">0</div><div class="rsc-label">biladi</div></div>
+      <div class="rs-card"><div class="rsc-num" id="ms-yellow" style="color:#f59e0b">0</div><div class="rsc-label">mashq kerak</div></div>
+      <div class="rs-card"><div class="rsc-num" id="ms-red" style="color:#ef4444">0</div><div class="rsc-label">bilmaydi</div></div>
+    </div>
+    <div id="ms-weak" style="padding:12px 16px;font-size:14px;color:var(--hint)"></div>
+    <div id="ms-advice" style="padding:8px 16px;background:var(--secondary-bg);border-radius:12px;margin:8px 16px;font-size:14px"></div>
+    <button class="btn primary" onclick="continueFromMilestone()" style="margin:16px">Davom etish →</button>
+  </div>
+</div>
+
+<!-- ===== RESULT SCREEN ===== -->
+<div id="result-screen" class="screen">
+  <div class="result-header">
+    <div class="result-score-ring">
+      <div class="rs-num" id="result-score">0/0</div>
+      <div class="rs-label">to'g'ri</div>
+    </div>
+    <div class="rh-title" id="result-title">Natijangiz</div>
+    <div class="rh-subtitle" id="result-subtitle"></div>
+  </div>
+  <div class="result-body">
+    <div class="result-stats">
+      <div class="rs-card">
+        <div class="rsc-num" id="r-total-q">0</div>
+        <div class="rsc-label">jami savol</div>
+      </div>
+      <div class="rs-card">
+        <div class="rsc-num" id="r-time">0</div>
+        <div class="rsc-label">o'rtacha vaqt</div>
+      </div>
+      <div class="rs-card">
+        <div class="rsc-num" id="r-percent">0%</div>
+        <div class="rsc-label">foiz</div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div> Biladi</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div> Mashq kerak</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div> Bilmaydi</div>
+    </div>
+    <div class="topic-list" id="topic-list"></div>
+    <div style="text-align:center;margin-top:16px;padding:12px;background:var(--secondary-bg);border-radius:12px">
+      <p style="font-size:14px;color:var(--text)">📋 Javobingiz ustozlar tomonidan tahlil qilinmoqda</p>
+      <p style="font-size:13px;color:var(--hint);margin-top:4px">1 soat ichida bot orqali batafsil tahlil keladi</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.ready();
+tg.expand();
+
+firebase.initializeApp({
+  databaseURL: "https://ziyokor2024-default-rtdb.firebaseio.com"
+});
+const fbDb = firebase.database();
+const userId = tg.initDataUnsafe?.user?.id || 'anonymous';
+const fbRef = fbDb.ref(`math_diagnostika/progress/${userId}`);
+
+let bank = {};
+let lessons = [];
+let lessonMeta = {};
+
+let engine = null;
+let questionStartTime = 0;
+let timerInterval = null;
+let totalQuestionsAsked = 0;
+
+let questionsReady = false;
+
+async function loadQuestions() {
+  const resp = await fetch('./questions.json');
+  const data = await resp.json();
+
+  const lessonSet = new Set();
+  for (const q of data.questions) {
+    const key = `${q.lesson_id}_${q.difficulty}`;
+    bank[key] = q;
+    lessonSet.add(q.lesson_id);
+    if (!lessonMeta[q.lesson_id]) {
+      lessonMeta[q.lesson_id] = { title: q.lesson_title, topicGroup: q.topic_group, topicGroupId: q.topic_group_id };
+    }
+  }
+  lessons = [...lessonSet].sort((a, b) => a - b);
+  questionsReady = true;
+}
+
+loadQuestions();
+
+class AdaptiveEngine {
+  constructor() {
+    this.lessonIndex = 0;
+    this.globalLevel = 4;
+    this.topicResults = [];
+    this.responses = [];
+    this.topicState = null;
+    this.consecutiveFastWrong = 0;
+    this.usedKeys = new Set();
+    this.isPaid = false;
+  }
+
+  startTopic() {
+    const lessonId = lessons[this.lessonIndex];
+    const startDiff = this.globalLevel;
+    this.topicState = { lessonId, step: 0, startDiff, questionsAsked: [] };
+    return this.getQuestion(startDiff);
+  }
+
+  getQuestion(difficulty) {
+    const lid = this.topicState.lessonId;
+    const key = `${lid}_${difficulty}`;
+    let q = bank[key];
+    if (!q || this.usedKeys.has(key)) {
+      for (const d of [difficulty, difficulty - 1, difficulty + 1, 1, 2, 3, 4]) {
+        if (d < 1 || d > 4) continue;
+        const k = `${lid}_${d}`;
+        if (bank[k] && !this.usedKeys.has(k)) { q = bank[k]; break; }
+      }
+    }
+    if (q) this.usedKeys.add(`${lid}_${q.difficulty}`);
+    return q;
+  }
+
+  processAnswer(question, answer, timeSec) {
+    const isCorrect = answer === question.correct;
+    const isFast = timeSec < Math.max(5, (question.expected_time_sec || 30) * 0.25);
+
+    const response = {
+      question_id: question.id,
+      lesson_id: question.lesson_id,
+      topic_group_id: question.topic_group_id,
+      topic_group: question.topic_group,
+      difficulty: question.difficulty,
+      answer,
+      correct: isCorrect,
+      time_sec: timeSec,
+      expected_time: question.expected_time_sec,
+    };
+    this.responses.push(response);
+    this.topicState.questionsAsked.push(response);
+    this.topicState.step++;
+    totalQuestionsAsked++;
+
+    if (isFast && !isCorrect) {
+      this.consecutiveFastWrong++;
+    } else {
+      this.consecutiveFastWrong = 0;
+    }
+
+    if (this.consecutiveFastWrong >= 3) {
+      return { action: 'pause' };
+    }
+
+    return this.decideNext(isCorrect, question.difficulty);
+  }
+
+  decideNext(isCorrect, askedDifficulty) {
+    const st = this.topicState;
+
+    if (st.startDiff === 4) {
+      if (st.step === 1) {
+        if (isCorrect) return this.finishTopic('yashil');
+        return { action: 'question', question: this.getQuestion(2) };
+      }
+      if (st.step === 2) {
+        if (isCorrect) return { action: 'question', question: this.getQuestion(3) };
+        return { action: 'question', question: this.getQuestion(1) };
+      }
+      if (st.step === 3) {
+        if (isCorrect) return this.finishTopic('sariq');
+        if (askedDifficulty === 1) return this.finishTopic('qizil');
+        return this.finishTopic('sariq');
+      }
+    }
+
+    if (st.startDiff === 2 || st.startDiff === 3) {
+      if (st.step === 1) {
+        if (isCorrect) return { action: 'question', question: this.getQuestion(4) };
+        return { action: 'question', question: this.getQuestion(1) };
+      }
+      if (st.step === 2) {
+        if (isCorrect && askedDifficulty === 4) return this.finishTopic('yashil');
+        if (isCorrect) return this.finishTopic('sariq');
+        if (askedDifficulty === 4) return this.finishTopic('sariq');
+        return this.finishTopic('qizil');
+      }
+    }
+
+    if (st.startDiff === 1) {
+      if (st.step === 1) {
+        if (isCorrect) return { action: 'question', question: this.getQuestion(2) };
+        return this.finishTopic('qizil');
+      }
+      if (st.step === 2) {
+        if (isCorrect) return this.finishTopic('sariq');
+        return this.finishTopic('qizil');
+      }
+    }
+
+    return this.finishTopic('sariq');
+  }
+
+  finishTopic(status) {
+    const st = this.topicState;
+    this.topicResults.push({
+      lessonId: st.lessonId,
+      title: lessonMeta[st.lessonId]?.title || '?',
+      topicGroup: lessonMeta[st.lessonId]?.topicGroup || '?',
+      topicGroupId: lessonMeta[st.lessonId]?.topicGroupId || 0,
+      status,
+      questions: st.questionsAsked,
+    });
+
+    this.updateGlobalLevel();
+    this.lessonIndex++;
+
+    if (this.lessonIndex >= lessons.length) {
+      return { action: 'finish' };
+    }
+    if (this.lessonIndex === 5 && !this.isPaid) {
+      return { action: 'paywall' };
+    }
+    return { action: 'next_topic' };
+  }
+
+  updateGlobalLevel() {
+    const recent = this.responses.slice(-5);
+    if (recent.length < 3) return;
+
+    const correctCount = recent.filter(r => r.correct).length;
+    if (correctCount >= 4) this.globalLevel = 4;
+    else if (correctCount >= 2) this.globalLevel = Math.min(4, Math.max(2, this.globalLevel));
+    else this.globalLevel = 2;
+  }
+
+  getProgress() {
+    return { current: this.lessonIndex, total: lessons.length };
+  }
+
+  getSummary() {
+    const correct = this.responses.filter(r => r.correct).length;
+    const total = this.responses.length;
+    const avgTime = total > 0
+      ? (this.responses.reduce((s, r) => s + r.time_sec, 0) / total).toFixed(1)
+      : 0;
+
+    return {
+      correct,
+      total,
+      percent: total > 0 ? Math.round((correct / total) * 100) : 0,
+      avgTime,
+      topicResults: this.topicResults,
+      responses: this.responses,
+      globalLevel: this.globalLevel,
+    };
+  }
+}
+
+function saveProgress() {
+  if (!engine) return;
+  const state = {
+    lessonIndex: engine.lessonIndex,
+    globalLevel: engine.globalLevel,
+    topicResults: engine.topicResults,
+    responses: engine.responses,
+    usedKeys: [...engine.usedKeys],
+    isPaid: engine.isPaid,
+    consecutiveFastWrong: engine.consecutiveFastWrong,
+    totalQuestionsAsked,
+    savedAt: Date.now()
+  };
+  try { localStorage.setItem('pmt_progress', JSON.stringify(state)); } catch {}
+  fbRef.set(state).catch(() => {});
+}
+
+async function loadSavedProgress() {
+  try {
+    const snap = await fbRef.once('value');
+    const fbState = snap.val();
+    if (fbState && Date.now() - fbState.savedAt < 24 * 3600 * 1000) {
+      return fbState;
+    }
+  } catch {}
+  try {
+    const raw = localStorage.getItem('pmt_progress');
+    if (!raw) return null;
+    const state = JSON.parse(raw);
+    if (Date.now() - state.savedAt > 24 * 3600 * 1000) {
+      localStorage.removeItem('pmt_progress');
+      return null;
+    }
+    return state;
+  } catch { return null; }
+}
+
+function resumeFromSaved(state) {
+  engine = new AdaptiveEngine();
+  engine.lessonIndex = state.lessonIndex;
+  engine.globalLevel = state.globalLevel;
+  engine.topicResults = state.topicResults;
+  engine.responses = state.responses;
+  engine.usedKeys = new Set(state.usedKeys);
+  engine.isPaid = state.isPaid;
+  engine.consecutiveFastWrong = state.consecutiveFastWrong;
+  totalQuestionsAsked = state.totalQuestionsAsked;
+
+  if (!engine.isPaid && engine.lessonIndex >= 5) {
+    showPaywall();
+    return;
+  }
+
+  showScreen('test-screen');
+  startNextTopic();
+}
+
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+async function startTest() {
+  if (!questionsReady) await loadQuestions();
+  const saved = await loadSavedProgress();
+  const params = new URLSearchParams(window.location.search);
+  const isPaid = params.get('paid') === '1';
+
+  if (saved && saved.responses && saved.responses.length > 0) {
+    if (isPaid) saved.isPaid = true;
+    if (saved.lessonIndex >= lessons.length) {
+      resumeFromSaved(saved);
+      finishTest();
+      return;
+    }
+    resumeFromSaved(saved);
+    return;
+  }
+
+  engine = new AdaptiveEngine();
+  if (isPaid) engine.isPaid = true;
+  totalQuestionsAsked = 0;
+  showScreen('test-screen');
+  startNextTopic();
+}
+
+const shownMilestones = new Set();
+
+function startNextTopic() {
+  const idx = engine.lessonIndex;
+  if (engine.isPaid && (idx === 15 || idx === 30) && !shownMilestones.has(idx)) {
+    shownMilestones.add(idx);
+    showMilestone(idx);
+    return;
+  }
+
+  const q = engine.startTopic();
+  if (!q) { finishTest(); return; }
+
+  const prog = engine.getProgress();
+  document.getElementById('progress-fill').style.width = `${(prog.current / prog.total) * 100}%`;
+  document.getElementById('topic-name').textContent = lessonMeta[lessons[engine.lessonIndex]]?.title || '';
+  document.getElementById('topic-counter').textContent = `${prog.current + 1} / ${prog.total}`;
+
+  showQuestion(q);
+}
+
+function showMilestone(topicIdx) {
+  const topics = engine.topicResults;
+  const greens = topics.filter(t => t.status === 'yashil').length;
+  const yellows = topics.filter(t => t.status === 'sariq').length;
+  const reds = topics.filter(t => t.status === 'qizil').length;
+  const correct = engine.responses.filter(r => r.correct).length;
+  const total = engine.responses.length;
+  const pct = total > 0 ? Math.round(correct / total * 100) : 0;
+
+  document.getElementById('ms-title').textContent = `${topicIdx} mavzu o'tildi`;
+  document.getElementById('ms-subtitle').textContent = `${correct}/${total} to'g'ri (${pct}%)`;
+  document.getElementById('ms-green').textContent = greens;
+  document.getElementById('ms-yellow').textContent = yellows;
+  document.getElementById('ms-red').textContent = reds;
+
+  const weakTopics = topics.filter(t => t.status === 'qizil').map(t => t.title);
+  document.getElementById('ms-weak').innerHTML = weakTopics.length > 0
+    ? `<b>Zaif mavzular:</b> ${weakTopics.join(', ')}`
+    : '✅ Hozircha qizil mavzu yo\'q — zo\'r!';
+
+  const remaining = 45 - topicIdx;
+  let advice = '';
+  if (pct >= 70) advice = `💪 Yaxshi ketayapsiz! Qolgan ${remaining} mavzuda shu sur'atni saqlang.`;
+  else if (pct >= 50) advice = `📚 O'rtacha natija. Qolgan ${remaining} mavzuda diqqatli bo'ling — zaif mavzularga e'tibor bering.`;
+  else advice = `⚠️ Zaif tomonlar ko'p. Qolgan ${remaining} mavzuda tezlikni emas, to'g'rilikni tanlang.`;
+  document.getElementById('ms-advice').textContent = advice;
+
+  document.getElementById('ms-icon').textContent = topicIdx === 15 ? '📊' : '📈';
+  showScreen('milestone-screen');
+  saveProgress();
+}
+
+function continueFromMilestone() {
+  showScreen('test-screen');
+  startNextTopic();
+}
+
+let currentQuestion = null;
+
+function showQuestion(q) {
+  if (!q) { finishTest(); return; }
+  currentQuestion = q;
+
+  const diffLabels = {1: 'Oson', 2: "O'rta", 3: "O'rta+", 4: 'Qiyin'};
+  document.getElementById('q-number').textContent = `Savol #${totalQuestionsAsked + 1}`;
+
+  const diffEl = document.getElementById('q-difficulty');
+  diffEl.textContent = diffLabels[q.difficulty] || '?';
+  diffEl.className = `diff-${q.difficulty}`;
+  document.getElementById('q-text').textContent = q.text;
+
+  const container = document.getElementById('options-container');
+  container.innerHTML = '';
+  for (const letter of ['A', 'B', 'C', 'D']) {
+    if (!q.options[letter]) continue;
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<span class="option-letter">${letter}</span><span>${q.options[letter]}</span>`;
+    btn.onclick = () => selectAnswer(letter);
+    container.appendChild(btn);
+  }
+
+  questionStartTime = performance.now();
+  startTimer();
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  const timerEl = document.getElementById('q-timer');
+  timerInterval = setInterval(() => {
+    const elapsed = Math.floor((performance.now() - questionStartTime) / 1000);
+    const m = Math.floor(elapsed / 60);
+    const s = elapsed % 60;
+    timerEl.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+  }, 200);
+}
+
+function selectAnswer(letter) {
+  clearInterval(timerInterval);
+  const timeMs = performance.now() - questionStartTime;
+  const timeSec = Math.round(timeMs / 100) / 10;
+  const q = currentQuestion;
+
+  const isCorrect = letter === q.correct;
+
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach((btn, i) => {
+    btn.onclick = null;
+    const btnLetter = ['A','B','C','D'][i];
+    if (btnLetter === q.correct) btn.classList.add('correct-answer');
+    if (btnLetter === letter && !isCorrect) btn.classList.add('wrong-answer');
+    if (btnLetter === letter) btn.classList.add('selected');
+  });
+
+  const result = engine.processAnswer(q, letter, timeSec);
+  saveProgress();
+
+  setTimeout(() => {
+    if (result.action === 'pause') {
+      showPause();
+    } else if (result.action === 'question') {
+      const prog = engine.getProgress();
+      document.getElementById('topic-counter').textContent = `${prog.current + 1} / ${prog.total}`;
+      showQuestion(result.question);
+    } else if (result.action === 'paywall') {
+      showPaywall();
+    } else if (result.action === 'next_topic') {
+      startNextTopic();
+    } else if (result.action === 'finish') {
+      finishTest();
+    }
+  }, 800);
+}
+
+function showPause() {
+  showScreen('pause-screen');
+  engine.consecutiveFastWrong = 0;
+  let remaining = 120;
+  const timerEl = document.getElementById('pause-timer');
+  const skipBtn = document.getElementById('pause-skip');
+  skipBtn.style.display = 'none';
+
+  const interval = setInterval(() => {
+    remaining--;
+    const m = Math.floor(remaining / 60);
+    const s = remaining % 60;
+    timerEl.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+    if (remaining <= 60) skipBtn.style.display = 'block';
+    if (remaining <= 0) {
+      clearInterval(interval);
+      resumeTest();
+    }
+  }, 1000);
+  window._pauseInterval = interval;
+}
+
+function resumeTest() {
+  clearInterval(window._pauseInterval);
+  showScreen('test-screen');
+  startNextTopic();
+}
+
+function showPaywall() {
+  clearInterval(timerInterval);
+  showScreen('paywall-screen');
+
+  const summary = engine.getSummary();
+  const trialTopics = summary.topicResults;
+
+  let html = '';
+  for (const t of trialTopics) {
+    const emoji = t.status === 'yashil' ? '🟢' : t.status === 'sariq' ? '🟡' : '🔴';
+    html += `<div class="trial-chip">${emoji} ${t.title.substring(0, 25)}</div>`;
+  }
+  document.getElementById('trial-results').innerHTML = html;
+
+  const greens = trialTopics.filter(t => t.status === 'yashil').length;
+  const reds = trialTopics.filter(t => t.status === 'qizil').length;
+  const yellows = trialTopics.length - greens - reds;
+
+  let aiText = `<strong>${greens}</strong> ta mavzuni bilasiz, <strong>${yellows}</strong> tasida mashq kerak, <strong>${reds}</strong> tasi zaif.`;
+  if (reds > 0) {
+    aiText += `<br><br>⚠️ Zaif: ${trialTopics.filter(t => t.status === 'qizil').map(t => t.title).join(', ')}.`;
+  }
+  document.getElementById('trial-ai-text').innerHTML = aiText;
+}
+
+function requestPayment() {
+  tg.sendData(JSON.stringify({
+    action: 'request_payment',
+  }));
+}
+
+function sendTrialResults() {
+  tg.sendData(JSON.stringify({
+    action: 'test_complete',
+    userId: userId,
+    isTrial: true,
+  }));
+}
+
+function unlockFullTest() {
+  engine.isPaid = true;
+  showScreen('test-screen');
+  startNextTopic();
+}
+
+function finishTest() {
+  clearInterval(timerInterval);
+  showScreen('result-screen');
+
+  const summary = engine.getSummary();
+
+  document.getElementById('result-score').textContent = `${summary.correct}/${summary.total}`;
+  document.getElementById('r-total-q').textContent = summary.total;
+  document.getElementById('r-time').textContent = `${summary.avgTime}s`;
+  document.getElementById('r-percent').textContent = `${summary.percent}%`;
+
+  let gradeText = '';
+  if (summary.percent >= 80) gradeText = "A'lo natija!";
+  else if (summary.percent >= 60) gradeText = 'Yaxshi natija';
+  else if (summary.percent >= 40) gradeText = "Mashq kerak";
+  else gradeText = 'Tayyorgarlik zarur';
+  document.getElementById('result-title').textContent = gradeText;
+  document.getElementById('result-subtitle').textContent = `${summary.percent}% to'g'ri javob`;
+
+  const listEl = document.getElementById('topic-list');
+  listEl.innerHTML = '';
+  for (const t of summary.topicResults) {
+    const item = document.createElement('div');
+    item.className = 'topic-item';
+    const emoji = t.status === 'yashil' ? '🟢' : t.status === 'sariq' ? '🟡' : '🔴';
+    item.innerHTML = `
+      <div class="topic-status ${t.status}"></div>
+      <div class="topic-name">${t.title}</div>
+      <div class="topic-pct">${emoji}</div>
+    `;
+    listEl.appendChild(item);
+  }
+  saveProgress();
+}
+
+function sendResults() {
+  tg.sendData(JSON.stringify({
+    action: 'test_complete',
+    userId: userId,
+    isTrial: !engine.isPaid,
+  }));
+}
+</script>
+</body>
+</html>
